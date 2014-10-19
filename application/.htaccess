@@ -1,0 +1,8 @@
+# ##############################################################################
+# # ALLOW ACCESS TO ASSETS   (IMAGES, CSS, FLASH)                              #
+# ##############################################################################
+<FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|js|css|swf|woff|svg|eot|ttf)$">
+    Order Allow,Deny
+    Allow from all 
+    Satisfy Any     
+</FilesMatch>

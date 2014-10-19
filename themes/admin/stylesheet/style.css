@@ -1,0 +1,16 @@
+
+.panel {
+    line-height:20px; text-align:left; padding:30px; width:20%; float:right; border-left:1px solid #999; height:100%;
+}
+
+.navigation>ul>li {
+    border:1px solid #ccc;
+    min-height:75px;    
+}
+
+.navigation ul>li {
+    display: inline-block;
+    width: 150px;
+    
+    vertical-align: top;
+}
