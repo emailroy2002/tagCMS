@@ -81,7 +81,9 @@ class MY_Public_controller extends MY_Controller{
                 $method = str_replace('-', '_', $method); 
                 if ( method_exists($class, $method) ) {
                     $this->$class->$method();
-                }         
+                } else if ( method_exists($class, 'index') ) {
+                    $this->$class->index();
+                }
             }
             $this->load->remove_package_path(APPPATH.'/../themes/default/libraries/', TRUE);            
         }

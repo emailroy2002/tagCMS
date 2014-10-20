@@ -15,8 +15,8 @@
 
     <tag:articles id="articles" class="items" scope="global" <?php //pagination="1" ?> filter="where|id=2,cat_id=6">
         <tag:article class="item">
-            <div><tag:ctr/>  <a href="<tag:url />"><tag:title text="limit|10"></tag:title></a></div>
-            <div><tag:description  text="limit|10, paragraph|100, strip|text"/></div>                               
+            <div><tag:ctr/>  <a href="<tag:url />"><tag:title text="limit|80"></tag:title></a></div>
+            <div><tag:description  text="limit|100, strip|text"/></div>                               
             <small class="light"><i>Date Published :  <tag:date_published date_format="l jS \of F Y h:i:s A" /></i></small>                            
         </tag:article>
     </tag:articles>   

@@ -285,34 +285,34 @@ class Theme {
                 $id     =  (isset($category['attributes']['id']))? $category['attributes']['id'] : '';                                                
                 $class  = (isset($category['attributes']['class']))? $category['attributes']['class'] : '';
                 
-                //Determine the Root category                
-                $root_category_slug = (isset($category['attributes']['root']))? $category['attributes']['root'] : null;
+                //Determine the Root category
+                                
+                $root_slug = (isset($category['attributes']['root']))? $category['attributes']['root'] : null;
+                $parent_slug = (isset($category['attributes']['parent']))? $category['attributes']['parent'] : null;
+                
+                if (isset($root_slug)) {
+                    $root_category_slug = $root_slug;
+                } else {
+                    $root_category_slug = $parent_slug;
+                }
+                       
                 
                 
                 if (isset($root_category_slug)) {                    
                     $root_category = $ci->model->from(TABLE_CATEGORIES)->where( array('slug'=> $root_category_slug) )->get_row();
-                    //$root_cat = $ci->category->current_category('archives');
-                    //$root_cat = $ci->model->from(TABLE_CATEGORIES)->get_by_slug($slug->id);    
-                } else {
-                    //@todo: retrieve the main menu for default
-                    //$root_cat = $ci->model->from(TABLE_CATEGORIES)->get_by_slug('main_menu');
-                          
+                    if (isset($root_category->id)) {
+                        $items = $ci->category->get_categories($root_category->id);        
+                    }                       
+                } else {                          
                    $items = $ci->category->get_categories();
-                } 
+                }  
                 
-                
-            
-                //GET THE ITEMS                                              
-                //$items = $ci->category->get_categories(isset($root_category->id)? $root_category->id : null);
-                
-                if (isset($root_category->id)) {
-                    $items = $ci->category->get_categories($root_category->id);    
-                } else {
-                    
-                }
+
                 
                 //GET SUB ITEMS ONLY without the PARENT LINK
-                //$items = $ci->category->sub_categories($root_category->id);
+                if (isset($parent_slug)) {
+                    $items = $ci->category->sub_categories($root_category->id);
+                }
                 
                 if (isset($items)) {
                     

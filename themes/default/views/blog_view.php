@@ -3,8 +3,8 @@
 
 <div style="float:left; width:70% !important">
     <tag:article:page>
-            <h3><tag:title text="limit|10, strip|html"></tag:title></h3>
-            <div><tag:description text="limit|10, strip|html" /></div>      
+            <h3><tag:title text="strip|html"></tag:title></h3>
+            <div><tag:description text="strip|html" /></div>      
         <hr />            
     </tag:article:page>
 </div>
