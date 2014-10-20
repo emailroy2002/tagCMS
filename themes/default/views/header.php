@@ -10,7 +10,12 @@
     <meta name="language" content="<tag:current_lang />" />    
     <link rel="stylesheet" href="<tag:base_url />themes/default/stylesheet/style.css" />    
     <link rel="stylesheet" href="<tag:base_url />themes/default/stylesheet/menu.css" />
-    <!-- TinyMCE -->
+    
+    
+    <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="<tag:base_url />themes/default/javascript/menu.js"></script>
+    
+    <!-- TinyMCE -->    
     <script type="text/javascript" src="<tag:base_url />themes/default/javascript/tinymce/tinymce.min.js"></script>
     <script type="text/javascript">
     tinymce.init({
@@ -48,8 +53,18 @@
 	</script>
 </head>
 <body>
-<div style="text-align: left;">
+
+<div>
     <a href="<tag:base_url />"><tag:site_title /></a>
+    <div><small><i><tag:site_description></tag:site_description></i></small>    
 </div>
 
+
+<div id="wrap">
+    <tag:categories type="ul" class="navbar" scope="global" multilevel="true">
+        <tag:category type="li">               
+             <a href="<tag:url/>"><tag:name text="limit|50"></tag:name></a>
+        </tag:category>
+    </tag:categories>
+</div>
 

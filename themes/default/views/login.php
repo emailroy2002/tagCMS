@@ -11,7 +11,7 @@
 <div style="float:left; width:70% !important">
     <div id="form" style="height: 800px;line-height:20px; text-align:left;padding-left:22px">
     
-        <form id="login" name="login" action="<tag:base_url/>login/authenticate" >
+        <form id="login" name="login" action="<tag:base_url/>login/" method="post" >
             <div>
                 <input name="username" id="username" type="text" placeholder="Enter username" class="validate[required]"/>
             </div>
@@ -19,7 +19,7 @@
             <div>
                 <input name="password" id="password" type="text" placeholder="Enter password" class="validate[required]"/>
             </div>
-            <input id="form_save" type="submit" value="Save"/>
+            <input id="form_save" name="login" type="submit" value="Save"/>
         </form>
         
     </div>

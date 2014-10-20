@@ -8,20 +8,9 @@ class Login extends MY_Model {
 
     }
         
-    function index() {     
-         echo "i am ready to see you login!";
+    function index() { 
         if ($this->input->post('login')) {
-            echo "yahoo!!";    
-        } else {
-            echo "i am ready to see you login!";
-        }        
-    }
-    
- 
-    
-    function authenticate () {
-        echo "User Login Authentication";
-        exit();
-        $this->view(__FUNCTION__);
+            echo "Login Authentication!!";    
+        }     
     }
 }
