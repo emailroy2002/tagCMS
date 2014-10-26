@@ -32,12 +32,24 @@ class Article extends MY_model {
     
     
     function is_article() {
-        $this->categories = self::uri_category();    
-        foreach ($this->categories as $slug) {            
-            $parent_id = (isset($cat->id))? $cat->id : null;              
-            $cat = $this->model->from(TABLE_CATEGORIES)->parent_id($parent_id)->get_by_slug($slug);            
-            $cat_array[] = $cat;                               
-        }        
+        $this->categories = self::uri_category();
+
+        if (sizeof($this->categories) > 0) {           
+            foreach ($this->categories as $slug) {            
+                //$parent_id = (isset($cat->id))? $cat->id : null;              
+                //$cat = $this->model->from(TABLE_CATEGORIES)->parent_id($parent_id)->get_by_slug($slug);
+                $cat = $this->model->from(TABLE_CATEGORIES)->where(array('slug'=>$slug))->get_row();
+                $cat_array[] = $cat;                               
+            }
+         } else {
+            //@todo: get $slug where parent is a menu
+            $slug = $this->uri->segment(1);
+            $item = $this->model->from(TABLE_ITEMS)->where(array('slug'=>$slug))->get_row();           
+            
+            $cat = $this->model->from(TABLE_CATEGORIES)->where(array('id'=>$item->cat_id, 'type'=> 'menu'))->get_row();
+            $cat_array[] = $cat;
+         }  
+        
         $index = isset($cat_array)? count($cat_array) - 1 : null; //array index of arrays
         $category_id =  (isset($cat_array[$index]->id))? $cat_array[$index]->id : null;
         if ($category_id) {
@@ -51,11 +63,23 @@ class Article extends MY_model {
     
     function get_item() {
         $this->categories = self::uri_category();        
-        foreach ($this->categories as $slug) {            
-            $parent_id = (isset($cat->id))? $cat->id : null;              
-            $cat = $this->model->from(TABLE_CATEGORIES)->parent_id($parent_id)->get_by_slug($slug);            
-            $cat_array[] = $cat;                               
-        }        
+        if (sizeof($this->categories) > 0) {           
+            foreach ($this->categories as $slug) {            
+                //$parent_id = (isset($cat->id))? $cat->id : null;              
+                //$cat = $this->model->from(TABLE_CATEGORIES)->parent_id($parent_id)->get_by_slug($slug);
+                $cat = $this->model->from(TABLE_CATEGORIES)->where(array('slug'=>$slug))->get_row();
+                $cat_array[] = $cat;                               
+            }
+         } else {
+            //@todo: get $slug where parent is a menu
+            $slug = $this->uri->segment(1);
+            $item = $this->model->from(TABLE_ITEMS)->where(array('slug'=>$slug))->get_row();           
+            
+            $cat = $this->model->from(TABLE_CATEGORIES)->where(array('id'=>$item->cat_id, 'type'=> 'menu'))->get_row();
+            $cat_array[] = $cat;
+         }       
+        
+        
         $index = isset($cat_array)? count($cat_array) - 1 : null; //array index of arrays
         $category_id =  (isset($cat_array[$index]->id))? $cat_array[$index]->id : null;
         if ($category_id) {            

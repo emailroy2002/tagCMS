@@ -38,7 +38,7 @@ class Nodes extends MY_Admin_controller {
             $has_items = (count($item_count) > 0)? true : false;            
             $has_children = ($has_category == true || $has_items == true) ? true : false;            
             if (!isset($c['parent_id'])) {
-                $rslt[] = array('id'=> $c['id'], 'text' => "<span class='root'>". shorten($c['name'], 0, 20) . "</span>", 'type' => 'folder', 'children'=> $has_children);    
+                $rslt[] = array('id'=> $c['id'], 'text'=> "<span class='root'>". shorten($c['name'], 0, 20) . "</span>", 'type' => 'folder', 'children'=> $has_children);    
             } else {
                 $rslt[] = array('id'=> $c['id'], 'text' => shorten($c['name'], 0, 20), 'type' => 'folder', 'children'=> $has_children);
             }
@@ -282,10 +282,10 @@ class Nodes extends MY_Admin_controller {
     public function edit_form_category() {        
         $id = $this->input->post('id');
         $text = $this->input->post('text');
-        $path = $this->path->get_category_link($id, $text, 'string');
+        $path = $this->path->get_category_link($id, $text, 'url');
         $data = array('id' => $id, 
                       'text'=> $text, 
-                      'anchor_link'=> anchor($path, site_url($path), array('target' => '_blank', 'class' => 'category_link'))
+                      'anchor_link'=> anchor($path, $path, array('target' => '_blank', 'class' => 'category_link'))
 
         );        
         /** generation of KEYS to be fetch on view file */
@@ -308,10 +308,10 @@ class Nodes extends MY_Admin_controller {
     public function edit_form_file() {
         $id = $this->input->post('id');
         $text = $this->input->post('text');
-        $path = $this->path->get_link($id, 'string');
+        $path = $this->path->get_link($id, 'url');
         $data = array('id' => $id, 
                       'text'=> $text, 
-                      'anchor_link'=> anchor($path, site_url($path), array('target' => '_blank', 'class' => 'article_link'))
+                      'anchor_link'=> anchor($path, $path, array('target' => '_blank', 'class' => 'article_link'))
         );
         
         $this->db->select(TABLE_ITEMS .".*");

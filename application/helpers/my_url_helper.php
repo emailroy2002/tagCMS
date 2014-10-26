@@ -4,9 +4,9 @@
 /** create an anchor link *
  * @id - id of the Item
 */ 
-function get_link($id, $type) {
+function get_link($id, $type, $limit = null) {
     $ci =& get_instance();
-    return $ci->path->get_link($id, $type);
+    return $ci->path->get_link($id, $type, $limit);
 }
 
 /** Get the current slug **/

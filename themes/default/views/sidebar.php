@@ -16,8 +16,21 @@
             <tag:category type="li">               
                  <a href="<tag:url/>"><tag:name text="limit|50"></tag:name></a>
             </tag:category>
-        </tag:categories>  
+        </tag:categories>
         
+        <?php if (slug()) : ?>
+            <h3>Articles</h3>
+            
+            <tag:articles id="articles"  scope="global">
+                <tag:article>
+                    <a href="<tag:url/>"><tag:title text="limit|30"></tag:title></a>
+                </tag:article>
+            </tag:articles>
+            
+        
+        <?php endif; ?>          
+        
+          
              
     </div>
    

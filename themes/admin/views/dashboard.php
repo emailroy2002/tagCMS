@@ -174,7 +174,7 @@ $(function () {
                         } else {
                             var title = character_limiter($('#form_title').val(), 20);
                         }                      
-                        
+                         
                         $("#tree").jstree('set_text', obj, title);                        
                         $('#tree').trigger('rename_node', { "node" : obj, "text" : tinymce.get('form_description').getContent(), "old" : obj.text });
                     } else {
@@ -240,10 +240,11 @@ $(function () {
 				'data' : {
 					'url' : '<?php echo site_url('admin/nodes/get_node')?>',       
 					'data' : function (node) {
-						return { 'id' : node.id };                   
+					   
+						return { 'id' : node.id };
 					}
 				},
-				'check_callback' : function(o, n, p, i, m) {
+				'check_callback' : function(o, n, p, i, m) {				    
 					if(m && m.dnd && m.pos !== 'i') { 
 					 //drag action
 					 return true; 
@@ -253,9 +254,8 @@ $(function () {
 						    console.log ("drop on the same tree");
                             return true; 
                         }
-					} else {
-					 //console.log ("node was transfered to other tree");
-					 return true;
+					} else {					 
+					   return true;
 					}
 				},
 				'themes' : {
@@ -299,8 +299,8 @@ $(function () {
 				}
 			},
 			'types' : {
-			    'default' : { 'icon' : 'folder' },
-				'file' : { 'valid_children' : [], 'icon' : 'file' }
+                'default' : { 'icon' : 'folder' },
+			     'file' : { 'valid_children' : [], 'icon' : 'file' }
 			},
             
             <?php if ($js_method_action == 'add_main_category') { ?>
@@ -325,6 +325,7 @@ $(function () {
                 return false;
             });
     
+            
                             
             $('#tree').bind("hover_node.jstree", function(e, data){
                 var inst = $.jstree.reference(data.node.id),

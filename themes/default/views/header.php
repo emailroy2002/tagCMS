@@ -61,7 +61,7 @@
 
 
 <div id="wrap">
-    <tag:categories type="ul" class="navbar" scope="global" multilevel="true">
+    <tag:categories type="ul" class="navbar" multilevel="true" parent="main" >        
         <tag:category type="li">               
              <a href="<tag:url/>"><tag:name text="limit|50"></tag:name></a>
         </tag:category>

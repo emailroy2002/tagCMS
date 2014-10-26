@@ -2,7 +2,7 @@
 
 class Category extends MY_model {
     
-    protected $categories, $categories_array, $cat_ids_array, $array;
+    protected $categories, $categories_array, $cat_ids_array, $array, $ptr = 0;
    
     protected $table = TABLE_CATEGORIES;
    
@@ -17,8 +17,15 @@ class Category extends MY_model {
         $segments = $this->article->uri_to_array();        
         foreach ($segments as $slug) {            
             $this->model->from(TABLE_CATEGORIES);            
-            (isset($category->id) != null)? $this->model->parent_id($category->id) : $this->model->parent_id(null);            
-            $category = $this->model->from(TABLE_CATEGORIES)->get_by_slug($slug);
+            //(isset($category->id) != null)? $this->model->parent_id($category->id) : $this->model->parent_id(null);            
+            //$category = $this->model->from(TABLE_CATEGORIES)->get_by_slug($slug);
+            
+            if (isset($category->id) != null){
+                $this->model->parent_id($category->id);
+            } else {
+                //$this->model->parent_id(null);            
+            }          
+            $category = $this->model->from(TABLE_CATEGORIES)->where(array('slug'=> $slug))->get_row();
             $array[] = isset($category->id)? $category->id : null;       
         }   
         return (count(array_filter($array)) == count($array))? true : false;
@@ -35,43 +42,62 @@ class Category extends MY_model {
     } 
     
         
-    function current_category($uri = null) { 
+    //@todo:  @param $uri is actuall a segment /news/blog/ without the http:// address, convert this!        
+    function current_category($uri = null) {          
         $segment = null;
         $segments = null;
-        
         if (!isset($uri)) {
             if (slug()) {
                 $uri = implode("/", uri_to_array());    
-            } else {
-                /** Link a category to front page **/
-                $frontpage = $this->model->from(TABLE_CATEGORIES)->where(array('is_frontpage' => true))->limit(1)->get_row();
-                if (isset($frontpage->id)) {
-                    $uri_array = $this->path->get_category_link($frontpage->id, null, 'url');
-                    $uri = implode("/", uri_to_array($uri_array));    
-                } 
-            }          
-        } else {
+            }        
+        } else {        
             $uri = implode("/", uri_to_array($uri));
-            
-        }
-       
-        $segments = explode("/", $uri);
-        
-        
-        if (!is_category()) {
+        }   
+         
+        $segments = explode("/", $uri);                                
+        if (!is_category()) {            
             $segments = array_slice($segments, 0, -1);
-        }        
-        
-        foreach ($segments as $segment) {  @$ctr ++;          
-            $category = $this->model->from(TABLE_CATEGORIES)->get_by_slug($segment);
-            if ($segment == slug()) {
-                if (isset($category)) {
-                    return to_object($category);    
+        }
+                           
+        foreach ($segments as $segment) { @$ctr ++;
+            $this->ptr = $this->ptr + 1; 
+            
+            //search this first segment then get his parent id.
+            $current_segment = $this->model->get_by_slug($segment);
+                        
+            if (isset($current_segment->id)) {
+                //CHECK: parent segment is a menu, else get the default parent id = NULL;                
+                $parent_segment = $this->model->get_by_id($current_segment->parent_id);                            
+                $array_search = array('slug'=> $segment, 'parent_id' => $current_segment->parent_id);                            
+            }
+                        
+            if ($this->ptr == 1) {
+               // echo $current_segment->name . " " . $current_segment->parent_id . " " . $current_segment->type;                
+                if ($current_segment->type == 'category') {
+                    //check if parent is a menu
+                    //echo " parent_type = ". $parent_segment->type;
+                    $parent_type = $parent_segment->type;
+                } else if ($current_segment->type == 'menu'){
+                    $parent_type = $current_segment->type;
                 }
-            } else if ($ctr == count($segments)) {
-                return to_object($category);
+                //echo $parent_type;   
+            }
+            
+            if ($parent_type == 'menu') {
+                if (isset($array_search)) {
+                    $category = $this->model->where($array_search)->get_row();    
+                }
+                if (isset($category->id)) {
+                    $this->category_id = $category->id;    
+                }
+                if ($this->ptr == count($segments)) {
+                    return to_object($category);
+                }
+            } else {
+                return null;
             }
         }
+        
     }  
         
         

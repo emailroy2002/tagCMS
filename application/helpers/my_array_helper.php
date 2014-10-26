@@ -42,10 +42,16 @@ function flatten_object($array) {
 
 
 function shorten($string, $start, $end) {
-    if (strlen($string) > $end) {
-        return htmlentities(substr($string, $start, $end)) ."...";    
+    if ($string && $end) {
+        if (strlen($string) > $end) {
+            $string = str_replace("&nbsp;"," ",$string);
+            return substr(htmlspecialchars_decode($string), $start, $end) ."...";    
+        } else {
+            return $string;
+        }        
     } else {
         return $string;
     }
+
         
 }

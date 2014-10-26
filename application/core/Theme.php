@@ -3,7 +3,7 @@
 class Theme {   
   
     private static $key; 
-    public static $content, $partial_content, $article, $category;
+    public static $content, $partial_content, $article, $category, $current_category;
           
     public static $ctr = 0;    
     
@@ -11,20 +11,15 @@ class Theme {
     	parent::__construct();
     }
     
-    
     function init() {
         self::select_template();
         self::parse_template(); 
         self::tag_manager(); 
-      
         //Re-Run tag manager twice to get the tags running on dynamic data
         //self::parse_template();         
         //self::tag_manager(); 
-        return (self::$content);  
-        
-   
+        return (self::$content);
     }
-    
         
     function get_partial_content($filename) {       
         $file = "./themes/default/views/$filename";
@@ -36,31 +31,49 @@ class Theme {
     function select_template() {
         $ci =& get_instance();  
         if (slug()) { 
-            //determine template using current URI string 
+            //determine template using current URI string
             $ci->current_category = $ci->category->current_category();
-            if (is_category()) {                
-                self::$content = self::get_partial_content($ci->current_category->template_view);                                
-            } else if (is_article()) {                
-                self::$content = self::get_partial_content($ci->current_category->template_single_view);                                        
+            if (is_category()) {
+                if (isset($ci->current_category->id)) {
+                   self::$content = self::get_partial_content($ci->current_category->template_view);    
+                } else {
+                    show_error('SORRY! CATEGORY URL IS NOT VALID.', 404);
+                }                               
+            } else if (is_article()) {
+                if (isset($ci->current_category)) {
+                    self::$content = self::get_partial_content($ci->current_category->template_single_view);    
+                } else {
+                    //@todo: get $slug where parent is a menu
+                    $slug = $this->uri->segment(1);
+                    $item = $this->model->from(TABLE_ITEMS)->where(array('slug'=>$slug))->get_row();           
+                    $cat = $this->model->from(TABLE_CATEGORIES)->where(array('id'=>$item->cat_id, 'type'=> 'menu'))->get_row();
+                    
+                    if (isset($cat)) {
+                        self::$content = self::get_partial_content($cat->template_single_view);    
+                    } else {
+                        show_error('PAGE IS INVALID.', 404);
+                    }
+                                   
+                }                                       
             } else {
                 show_error('SORRY! URL, PAGE OR CATEGORY NOT FOUND, PLEASE TRY AGAIN SOON.', 404);                
             }
-        } else {
-            //retrieve front_page pointer dynamically
-            $frontpage = $this->model->from(TABLE_CATEGORIES)->where( array('is_frontpage'=>true) )->get_row();
             
-            if (isset($frontpage->id)) {            
-                $uri_path = $this->path->get_category_link($frontpage->id, null, 'url');                                                
+        } else {
+            $ci->frontpage = $this->model->from(TABLE_CATEGORIES)->where(array('is_frontpage'=>true) )->get_row();
+            if (isset($ci->frontpage->id)) {
+                $uri_path = $this->path->get_category_link($ci->frontpage->id, null, 'segments');                                                                
                 $ci->current_category = $ci->category->current_category($uri_path);
-                self::$content = self::get_partial_content($frontpage->template_view);
+                self::$content = self::get_partial_content($ci->frontpage->template_view);
             } else {
                 //todo : make dynamic
                 self::$content = self::get_partial_content('blog.php');
-            }       
-            
-                        
+            }           
         }
     }
+    
+    
+   
     
     
     public function selected_category() {
@@ -70,10 +83,7 @@ class Theme {
         } else {
             return null;
         }
-        
-    } 
-    
-    
+    }
         
     /** parse_template - RECURSE INCLUDED TEMPLATE **/
     function parse_template() {                        
@@ -120,14 +130,12 @@ class Theme {
         
         $category = isset($ci->current_category)? $ci->current_category : null;
         
-        
         if (is_object($category) && (count(get_object_vars($category)) > 0) ) {
             
             if (is_category()) {
                 //CATEGORY META INFORMATION 
                 self::tag_replace("page_title", $category->name);
-                self::tag_replace("meta_description", strip_tags($category->description));
-                
+                self::tag_replace("meta_description", strip_tags($category->description));                
                 //for page
                 self::tag_replace("category_title", $category->name);
                 self::tag_replace("category_description", $category->description);                
@@ -142,15 +150,20 @@ class Theme {
                     self::tag_replace("page_title",$category->name . " - ".  "INSPIRED IDEAS");
                     self::tag_replace("meta_description", "" );               
                     self::tag_replace("meta_keywords", "");                    
-                }
-                                           
-            }          
-                      
+                }                          
+            }         
         } else {
              //@todo - GET GENERAL SITE INFORMATION             
              self::tag_replace("page_title", "INSPIRED IDEAS");
              self::tag_replace("meta_description", "Information technology company located in Qatar");               
              self::tag_replace("meta_keywords", "Information technology company located in Qatar");
+             
+            //todo: get from settings if available
+            if (isset($ci->frontpage->id)) {
+                self::tag_replace("category_title", $ci->frontpage->name);
+                self::tag_replace("category_description", $ci->frontpage->description);                
+            }
+                          
         }
         
 
@@ -286,20 +299,16 @@ class Theme {
                 $class  = (isset($category['attributes']['class']))? $category['attributes']['class'] : '';
                 
                 //Determine the Root category
-                                
                 $root_slug = (isset($category['attributes']['root']))? $category['attributes']['root'] : null;
                 $parent_slug = (isset($category['attributes']['parent']))? $category['attributes']['parent'] : null;
-                
                 if (isset($root_slug)) {
                     $root_category_slug = $root_slug;
                 } else {
                     $root_category_slug = $parent_slug;
-                }
-                       
-                
+                }              
                 
                 if (isset($root_category_slug)) {                    
-                    $root_category = $ci->model->from(TABLE_CATEGORIES)->where( array('slug'=> $root_category_slug) )->get_row();
+                    $root_category = $ci->model->from(TABLE_CATEGORIES)->where(array('slug'=> $root_category_slug))->get_row();
                     if (isset($root_category->id)) {
                         $items = $ci->category->get_categories($root_category->id);        
                     }                       
@@ -311,7 +320,9 @@ class Theme {
                 
                 //GET SUB ITEMS ONLY without the PARENT LINK
                 if (isset($parent_slug)) {
-                    $items = $ci->category->sub_categories($root_category->id);
+                    if (isset($root_category->id)) {
+                        $items = $ci->category->sub_categories($root_category->id);    
+                    }
                 }
                 
                 if (isset($items)) {
@@ -464,14 +475,24 @@ class Theme {
                     $recursion_type = ($scope == 'global') ?  true :  false;
                     
                     $total_rows = $ci->article->count($recursion_type);
+                                                    
+                    //overide current category if there is a tag "PARENT"                            
+                    $parent = (isset($article['attributes']['parent']))? $article['attributes']['parent'] : null;                        
+                    if (isset($parent)) {                    
+                        $parent = $ci->model->from(TABLE_CATEGORIES)->where(array('slug'=> $parent))->get_row();
+                        if (isset($parent->id)) {
+                            $ci->current_category = $parent;
+                        }                       
+                    }      
                     
-                   
+                    
+                    
                     if ( isset($article['attributes']['pagination']) || isset($article['attributes']['pagination']) > 0) {                        
                         $page_row_limit = (isset($article['attributes']['pagination']))? $article['attributes']['pagination'] : null;
-                   } else {
-                        if (isset($ci->category->current_category()->items_per_page)){                            
-                            if ($ci->category->current_category()->items_per_page > 0) {
-                                $page_row_limit = $ci->category->current_category()->items_per_page;
+                   } else {                        
+                        if (isset($ci->current_category->items_per_page)){
+                            if ($ci->current_category->items_per_page > 0) {
+                                $page_row_limit = $ci->current_category->items_per_page;
                             } else {
                                 $page_row_limit = $ci->setting->general_row_limit();
                             }
@@ -539,13 +560,14 @@ class Theme {
 
                                 $details_type = (isset($details['attributes']['type']))? $details['attributes']['type'] : 'div';                            
                                 $details_class = (isset($details['attributes']['class']))? $details['attributes']['class'] : '';
-                                                                
+                                $anchor_text_limit = (isset($details['attributes']['anchor_text_limit']))? $details['attributes']['anchor_text_limit'] : '';
                                 $content = $details['contents'];
                                 
                                 /** start [children tags] **/
                                 $rows .= "\t<$details_type class='$details_class'>";
                                 
                                 $content = self::replace($content, get_link($item->id, 'url'), 'url');
+                                $content = self::replace($content, get_link($item->id, 'link', $anchor_text_limit), 'link');
                                 $content = self::replace($content, @$ctr += 1, 'ctr');
                                 
                                 foreach ($field_keys as $key) {
@@ -586,8 +608,7 @@ class Theme {
 
     function replace($string, $replacement, $key, $recall = false) {
         $ci =& get_instance();
-        $ci->load->helper('text');
-        
+       
         $ci->replacement = $replacement;
         
         //format attributes [date, text]     
@@ -600,47 +621,8 @@ class Theme {
             } 
             
             if (isset($attr[0]['attributes']['text'])) { 
-                
                 $text_limits = $attr[0]['attributes']['text'];
-        
-                if ($text_limits) {
-                    $limits = explode (",", $text_limits);                                        
-                    foreach ($limits as $limit) {                        
-                        $txt_limit = explode("|", $limit);  
-                                              
-                        $case = trim($txt_limit[0]);
-                        $value = trim($txt_limit[1]);      
-                        
-                        if ($case == 'limit') {
-                            //$text = character_limiter( strip_tags($ci->replacement), $value);
-                            $text  = shorten( strip_tags($ci->replacement), 0, $value);
-                            $ci->replacement = strip_bbcode($text);
-                        }
-                                                
-                        if ($case == 'paragraph') {
-                            $text = null;
-                            $result = preg_split('/(?<=[.?!;:])\s+/', $ci->replacement, -1, PREG_SPLIT_NO_EMPTY);                            
-                            for($i=0; $i < $value ; $i++) {
-                                if (isset($result[$i])) {
-                                    $text .= $result[$i];    
-                                }
-                            }
-                            if (sizeof($result) > $value) {
-                                $ci->replacement = $text ."....";    
-                            } else {
-                                $ci->replacement = $text;
-                            }                            
-                        }                        
-                        
-                        if ($case == 'strip') {                            
-                            $ci->replacement= strip_tags($ci->replacement);
-                        }                       
-                       
-                       
-                    }                                               
-                }
-                
-                
+                self::clean_text($text_limits);
             }
         }
                                             
@@ -664,6 +646,48 @@ class Theme {
         return $output; 
     }
     
+    
+    function clean_text($text_limits){
+        $ci =& get_instance();
+        $ci->load->helper('text');        
+        if ($text_limits) {
+            $limits = explode (",", $text_limits);
+                                                    
+            foreach ($limits as $limit) {
+                
+                $txt_limit = explode("|", $limit);  
+                                      
+                $case = trim($txt_limit[0]);
+                $value = trim($txt_limit[1]);      
+                
+                if ($case == 'limit') {
+                    //$text = character_limiter( strip_tags($ci->replacement), $value);
+                    $text  = shorten( strip_tags($ci->replacement), 0, $value);
+                    $ci->replacement = strip_bbcode($text);
+                }
+                              
+                if ($case == 'paragraph') {
+                    $text = null;
+                    $result = preg_split('/(?<=[.?!;:])\s+/', $ci->replacement, -1, PREG_SPLIT_NO_EMPTY);                            
+                    for($i=0; $i < $value ; $i++) {
+                        if (isset($result[$i])) {
+                            $text .= $result[$i];    
+                        }
+                    }
+                    if (sizeof($result) > $value) {
+                        $ci->replacement = $text ."....";    
+                    } else {
+                        $ci->replacement = $text;
+                    }                            
+                }                        
+                
+                if ($case == 'strip') {                            
+                    $ci->replacement= strip_tags($ci->replacement);
+                }
+            }    
+                                                       
+        }        
+    }
             
     
     /**
