@@ -1,1 +1,0 @@
-<small>AS INVENT</small>
