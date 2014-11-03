@@ -4,7 +4,7 @@ class Theme {
   
     private static $key; 
     public static $content, $partial_content, $article, $category, $current_category;
-          
+        
     public static $ctr = 0;    
     
     function __construct($table='') {        
@@ -16,8 +16,8 @@ class Theme {
         self::parse_template(); 
         self::tag_manager(); 
         //Re-Run tag manager twice to get the tags running on dynamic data
-        //self::parse_template();         
-        //self::tag_manager(); 
+        self::parse_template();         
+        self::tag_manager(); 
         return (self::$content);
     }
         
@@ -35,30 +35,28 @@ class Theme {
             $ci->current_category = $ci->category->current_category();
             if (is_category()) {
                 if (isset($ci->current_category->id)) {
-                   self::$content = self::get_partial_content($ci->current_category->template_view);    
+                    self::$content = self::get_partial_content($ci->current_category->template_view);    
                 } else {
                     show_error('SORRY! CATEGORY URL IS NOT VALID.', 404);
                 }                               
             } else if (is_article()) {
                 if (isset($ci->current_category)) {
                     self::$content = self::get_partial_content($ci->current_category->template_single_view);    
-                } else {
-                    //@todo: get $slug where parent is a menu
-                    $slug = $this->uri->segment(1);
-                    $item = $this->model->from(TABLE_ITEMS)->where(array('slug'=>$slug))->get_row();           
-                    $cat = $this->model->from(TABLE_CATEGORIES)->where(array('id'=>$item->cat_id, 'type'=> 'menu'))->get_row();
-                    
+                } else {                  
+                    //@todo: get $slug where parent is a item category type is a 'menu'
+                    $slug   = slug();
+                    $item   = $this->model->from(TABLE_ITEMS)->where(array('slug'=> $slug))->get_row();           
+                    $cat    = $this->model->from(TABLE_CATEGORIES)->where(array('id'=>$item->cat_id, 'type'=> 'menu'))->get_row();
                     if (isset($cat)) {
+                        $ci->current_category = $cat;
                         self::$content = self::get_partial_content($cat->template_single_view);    
                     } else {
                         show_error('PAGE IS INVALID.', 404);
-                    }
-                                   
+                    }              
                 }                                       
             } else {
                 show_error('SORRY! URL, PAGE OR CATEGORY NOT FOUND, PLEASE TRY AGAIN SOON.', 404);                
             }
-            
         } else {
             $ci->frontpage = $this->model->from(TABLE_CATEGORIES)->where(array('is_frontpage'=>true) )->get_row();
             if (isset($ci->frontpage->id)) {
@@ -71,9 +69,6 @@ class Theme {
             }           
         }
     }
-    
-    
-   
     
     
     public function selected_category() {
@@ -108,25 +103,28 @@ class Theme {
     
     
     /**
-     * @key     - string <tag:$key />
+     * @key     - string $key 
      * @string  - string replacment text
     */
-    function tag_replace($key, $string = " this is a replacement string") {
-        self::$content = self::replace(self::$content, $string , $key);
-        return self::$content;
+    function tag_replace($key, $replacement) {
+       $tags = Theme::extract_tags(self::$content, array('tag:'.$key), true, true);       
+       foreach ($tags as $tag) {       
+            self::$content = self::replace(self::$content, $replacement , $key, false, 1);
+       }
+       return self::$content;
     }        
     
     
     
     function tag_manager() {      
         $ci =& get_instance();        
-        $class = __CLASS__;        
-        
+        $class = __CLASS__;
         //SETTINGS FOR URL, THEME AND ETC
         self::tag_replace("base_url", base_url());
         self::tag_replace("site_url", site_url());
         self::tag_replace("site_title","AS INVENT");
         self::tag_replace("site_description","Inspired Ideas");
+        self::tag_replace("year", date('Y'));
         
         $category = isset($ci->current_category)? $ci->current_category : null;
         
@@ -152,22 +150,22 @@ class Theme {
                     self::tag_replace("meta_keywords", "");                    
                 }                          
             }         
-        } else {
-             //@todo - GET GENERAL SITE INFORMATION             
-             self::tag_replace("page_title", "INSPIRED IDEAS");
-             self::tag_replace("meta_description", "Information technology company located in Qatar");               
-             self::tag_replace("meta_keywords", "Information technology company located in Qatar");
-             
+        } else {             
             //todo: get from settings if available
             if (isset($ci->frontpage->id)) {
                 self::tag_replace("category_title", $ci->frontpage->name);
                 self::tag_replace("category_description", $ci->frontpage->description);                
-            }
-                          
+            } else {
+                //no front page link set
+                self::tag_replace("category_title", "AS INVENT");
+                self::tag_replace("category_description", "inspired ideas");
+                
+                //@todo - GET GENERAL SITE INFORMATION dynamicall            
+                self::tag_replace("page_title", "INSPIRED IDEAS");
+                self::tag_replace("meta_description", "Information technology company located in Qatar");               
+                self::tag_replace("meta_keywords", "Information technology company located in Qatar");                                
+            }            
         }
-        
-
-        
         //TAG FOR ARTICLES, CATEGORIES AND PAGINATION
         $keys = array ('categories', 'articles', 'article:page', 'pagination');
                 
@@ -193,11 +191,7 @@ class Theme {
         
         //user information
         self::tag_replace("username", "Administrator");
-        
-          
-        return (self::$content);      
-        
-               
+        return (self::$content);
     }
 
     
@@ -209,9 +203,11 @@ class Theme {
         foreach ($matches as $match) {
             $pages = Theme::extract_tags($match, array('tag:pagination'));
             foreach ($pages as $page) {
-                $id_for =  $page['attributes']['for'];            
-                $pagination_links = isset($ci->pagination_link[$id_for])? $ci->pagination_link[$id_for] : null;
-                self::$content = self::replace($match, $pagination_links , 'pagination');                
+                if (isset($page['attributes']['for'])) {
+                    $id_for =  $page['attributes']['for'];            
+                    $pagination_links = isset($ci->pagination_link[$id_for])? $ci->pagination_link[$id_for] : null;
+                    self::$content = self::replace($match, $pagination_links , 'pagination');
+                }                
             }
         }
         return self::$content;
@@ -254,9 +250,21 @@ class Theme {
                 $url = $ci->path->get_category_link($sub_item['id'], $sub_item['name'], 'url');
                                
                 $ci->temp_tag = self::replace($ci->temp_tag, $link, 'link');                                  
-                $ci->temp_tag = self::replace($ci->temp_tag, $url, 'url');   
-                                                              
-               $ci->rows .=  $ci->temp_tag;
+                $ci->temp_tag = self::replace($ci->temp_tag, $url, 'url');
+                
+               
+                //Add marker if there are any subcategories
+                $children = Theme::extract_tags($ci->temp_tag, array('tag:has_children'));
+                foreach ($children as $child) {
+                    if (sizeof($sub_item['subcategories']) > 0) {
+                        $ci->temp_tag = self::replace($ci->temp_tag, $child['contents'], 'has_children', true);      
+                    } else {
+                        $ci->temp_tag = self::replace($ci->temp_tag, " ", 'has_children', true);
+                    }                                    
+                }               
+               
+               $ci->rows .= $ci->temp_tag;
+               
                //get 3rd level subcategories
                if (is_array($sub_item['subcategories'])){
                     self::subcategories_tag_manager($sub_item['subcategories']);                                             
@@ -268,7 +276,7 @@ class Theme {
            $ci->rows .= '</ul>';
            
                       
-           $ci->subcategories .= $ci->rows;
+           $ci->subcategories .=   $ci->rows;
            $ci->rows = null;
        }     
     }
@@ -291,7 +299,9 @@ class Theme {
                 /** Start Parent Attributes **/
                 
                 //Determine  MultiLevel Category Menu  (True, False)
-                $multilevel = (isset($category['attributes']['multilevel']))? to_boolean($category['attributes']['multilevel']) : null;               
+                $multilevel = (isset($category['attributes']['multilevel']))? to_boolean($category['attributes']['multilevel']) : null;
+                $scope = (isset($category['attributes']['scope']))? $category['attributes']['scope'] : null; 
+                               
                 
                 //type and class for parent tag
                 $type   = (isset($category['attributes']['type']))? $category['attributes']['type'] : 'div';
@@ -300,6 +310,8 @@ class Theme {
                 
                 //Determine the Root category
                 $root_slug = (isset($category['attributes']['root']))? $category['attributes']['root'] : null;
+		
+		//Determenie parent slug (this will not show the top level tags of said slug)
                 $parent_slug = (isset($category['attributes']['parent']))? $category['attributes']['parent'] : null;
                 if (isset($root_slug)) {
                     $root_category_slug = $root_slug;
@@ -349,6 +361,8 @@ class Theme {
                                 $details_type = (isset($tag_details['attributes']['type']))? $tag_details['attributes']['type'] : 'div';                            
                                 $details_class = (isset($tag_details['attributes']['class']))? $tag_details['attributes']['class'] : $item['slug'];
                                 
+                                
+                                
                                 /** start [children html tags] **/
                               
                                 $rows .= "\t<$details_type class='$details_class'>";  
@@ -359,13 +373,10 @@ class Theme {
                                 $ci->main_tag = $tag_details['contents'];
                                 $ci->subcategory_tag = $tag_details['contents']; //pass the subcategory for TAG reference
                                 
-                                //prepare link tag for main category      
-                   
-                                
-                                                                                                                                      
+                                //prepare link tag for main category                                                                  
                                 foreach ($ci->field_keys as $key) {
                                     if (is_array($item[$key])) {
-                                        if ($multilevel == true) {
+                                        if ($multilevel == true || strtolower($scope) == 'global') {
                                             //get subcategores (2nd level)
                                             self::subcategories_tag_manager($item[$key]);
                                         }
@@ -377,13 +388,27 @@ class Theme {
                                     
                                 $link = $ci->path->get_category_link($item['id'], $item['name'], 'link');
                                 $url = $ci->path->get_category_link($item['id'], $item['name'], 'url');                                    
-                                  
+                                                                  
                                 $content = self::replace($ci->main_tag, $link, 'link', true);                                  
                                 $content = self::replace($content, $url, 'url', true);
+                                
+                                //Add marker if there are any subcategories
+                                $children = Theme::extract_tags($tag_details['contents'], array('tag:has_children'));
+                                foreach ($children as $child) {
+                                    if (sizeof($ci->subcategories) > 0) {
+                                        $content = self::replace($content, $child['contents'], 'has_children', true);      
+                                    } else {
+                                        $content = self::replace($content, " ", 'has_children', true);
+                                    }                                    
+                                }
+                                
+                                
                                 $rows .= $content;
-
-
-                             
+                                
+                                //$rows .= sizeof($ci->subcategories)." ". $ci->subcategories; //add the subcategories
+                                
+                                
+                                
                                 $rows .= $ci->subcategories; //add the subcategories
                                 
                                 $rows .= "</$details_type>" . PHP_EOL;
@@ -471,38 +496,52 @@ class Theme {
                     $id     =  (isset($article['attributes']['id']))? $article['attributes']['id'] : '';                                                
                     $class  = (isset($article['attributes']['class']))? $article['attributes']['class'] : '';
                     $scope = (isset($article['attributes']['scope']))? $article['attributes']['scope'] : null;
-                                       
-                    $recursion_type = ($scope == 'global') ?  true :  false;
+                                        
+                    //store current category for original before override (used for pagination)
+                    if (isset($ci->current_category)) {
+                        $current_category = $ci->current_category;
+                        $ci->article->set_order($current_category->order);
+                        //echo $ci->current_category->name ." ". $ci->current_category->order."<Br>";
+                    }
                     
-                    $total_rows = $ci->article->count($recursion_type);
-                                                    
                     //overide current category if there is a tag "PARENT"                            
                     $parent = (isset($article['attributes']['parent']))? $article['attributes']['parent'] : null;                        
-                    if (isset($parent)) {                    
-                        $parent = $ci->model->from(TABLE_CATEGORIES)->where(array('slug'=> $parent))->get_row();
+                    if (isset($parent)) {
+                        //tag has parent, override process below                        
+                        $parent = $ci->model->from(TABLE_CATEGORIES)->where(array('slug'=> $parent))->get_row();                        
                         if (isset($parent->id)) {
-                            $ci->current_category = $parent;
-                        }                       
-                    }      
+                            $ci->current_category = $parent;                           
+                        }
+                        $recursion_type = ($scope == 'global') ?  true :  false;                    
+                        $total_rows = $ci->article->count($ci->current_category->id, $recursion_type);
+                                            
+                    } else {
+                        //no parent                                                
+                        $recursion_type = ($scope == 'global') ?  true :  false;                    
+                        $total_rows = $ci->article->count(null, $recursion_type);                        
+                    }
                     
-                    
-                    
-                    if ( isset($article['attributes']['pagination']) || isset($article['attributes']['pagination']) > 0) {                        
-                        $page_row_limit = (isset($article['attributes']['pagination']))? $article['attributes']['pagination'] : null;
-                   } else {                        
-                        if (isset($ci->current_category->items_per_page)){
+                    if (isset($article['attributes']['pagination'])) {
+                        if (($article['attributes']['pagination']) > 0) {
+                            $page_row_limit = (isset($article['attributes']['pagination']))? $article['attributes']['pagination'] : null;    
+                        } else {
+                            $page_row_limit = 0;
+                        }
+                    } else {                        
+                         if (isset($ci->current_category->items_per_page)){
                             if ($ci->current_category->items_per_page > 0) {
-                                $page_row_limit = $ci->current_category->items_per_page;
+                                //$page_row_limit = $ci->current_category->items_per_page;
+                                $page_row_limit = $current_category->items_per_page;
                             } else {
-                                $page_row_limit = $ci->setting->general_row_limit();
+                                $page_row_limit = 0;
                             }
                         } else {
                             $page_row_limit = $ci->setting->general_row_limit();
                         }
                    }                        
-                        //todo: check if there is keyword "page/" in the url                        
-                        
-                  if ($page_row_limit >= 0)  {    
+                
+                
+                  if ($page_row_limit >= 1)  {    
                         //CONFIGURATION FOR PAGE LINKS
                         $config['base_url'] = site_url(Article::uri_to_array()) ."/page/";
                         $config['first_url'] = site_url(Article::uri_to_array());
@@ -518,10 +557,8 @@ class Theme {
                             $page = $ci->uri->segment($ci->uri->total_segments());    
                             $config["uri_segment"] = $ci->uri->total_segments();
                         }
-                        
-                        $ci->pagination->initialize($config);        
-                      
-                      
+                        $ci->pagination->initialize($config);
+			
                         //PAGE NUMBERING OFFSETS
                         if ($total_rows > 0) {
                     		if ($page) {
@@ -534,15 +571,26 @@ class Theme {
                         } else {
                                $start = 0; 
                         }
+                        
                         //create the pagination links
                         $page_boundary = ceil($total_rows /  $page_row_limit);
                         if ($page <= ceil($page_boundary)) {
                             $ci->pagination_link[$id] =  $ci->pagination->create_links();    
-                        }    
-                                       
-                        $items = $ci->article->get_items( (isset($page_row_limit))? $page_row_limit : 1, ($start <= 0) ? 0 : $start, $recursion_type);
+                        } 
+                          
+                        //get all items paginatied
+                        $items = $ci->article->get_items( null, (isset($page_row_limit))? $page_row_limit : 1, ($start <= 0) ? 0 : $start, $recursion_type);
                         
-                    } 
+                    } else {
+		              	//Row limit is null
+                        if (isset($parent)) {
+                            //get item with current cateogry parent id
+                            $items = $ci->article->get_items($ci->current_category->id);
+                        } else {
+                            //get all items witouth pagination
+                            $items = $ci->article->get_items();    
+                        }
+                    }
 
                     
                     if (count($items) > 0) {
@@ -571,7 +619,7 @@ class Theme {
                                 $content = self::replace($content, @$ctr += 1, 'ctr');
                                 
                                 foreach ($field_keys as $key) {
-                                    $content = self::replace($content, $item->{$key}, $key);    
+                                    $content = self::replace($content, $item->{$key}, $key, false, 1);    
                                 }
                                                         
                                 $rows .= $content;
@@ -605,14 +653,14 @@ class Theme {
     
 
 
-
-    function replace($string, $replacement, $key, $recall = false) {
+    //iterate = (all = -1) , (just once = 1)
+    function replace($string, $replacement, $key, $recall = false, $iterate = -1) {
         $ci =& get_instance();
        
         $ci->replacement = $replacement;
         
         //format attributes [date, text]     
-        $attr = Theme::extract_tags( $string, array("tag:$key"));        
+        $attr = Theme::extract_tags($string, array("tag:$key"));        
         if (isset($attr[0])) {
         
             if (isset($attr[0]['attributes']['date_format'])) { 
@@ -633,7 +681,7 @@ class Theme {
                 ), 
                 $ci->replacement, 
                 $string,
-                -1,
+                $iterate,
                 $count                
         );
         
@@ -661,12 +709,14 @@ class Theme {
                 $value = trim($txt_limit[1]);      
                 
                 if ($case == 'limit') {
+		    
                     //$text = character_limiter( strip_tags($ci->replacement), $value);
                     $text  = shorten( strip_tags($ci->replacement), 0, $value);
                     $ci->replacement = strip_bbcode($text);
                 }
                               
                 if ($case == 'paragraph') {
+		    
                     $text = null;
                     $result = preg_split('/(?<=[.?!;:])\s+/', $ci->replacement, -1, PREG_SPLIT_NO_EMPTY);                            
                     for($i=0; $i < $value ; $i++) {
@@ -681,9 +731,18 @@ class Theme {
                     }                            
                 }                        
                 
-                if ($case == 'strip') {                            
-                    $ci->replacement= strip_tags($ci->replacement);
+                if ($case == 'strip') {
+		    
+                    if ($value == 'html') {
+                        $ci->replacement = strip_tags($ci->replacement);
+			
+                    } else if ($value == 'linebreak' || $value == 'linebreaks'){
+                        $ci->replacement = preg_replace( "/\r|\n/", " ", $ci->replacement );
+			
+                    }
                 }
+		
+		
             }    
                                                        
         }        
@@ -726,8 +785,13 @@ class Theme {
         $selfclosing_tags = array( 'area', 'base', 'basefont', 'br', 'hr', 'input', 'img', 'link', 'meta', 'col', 'param' );
         
         
-        //the ftl tags that needs to be auto closed if the use self clolsing ftl tag 
-        $ftl_tags = array('tag:site_title', 'tag:meta_title','tag:include:partial', 'tag:pagination', 'tag:link','tag:url', 'tag:id', 'tag:cat_id', 'tag:title', 'tag:description', 'tag:date_published');
+        //the ftl tags that needs to be auto closed 
+        $ftl_tags = array(
+                        'tag:site_title', 'tag:meta_title', 'tag:meta_description', 'tag:meta_keywords',
+                        'tag:include:partial', 'tag:pagination', 
+                        'tag:link','tag:url', 'tag:id', 'tag:cat_id', 
+                        'tag:title', 'tag:description', 'tag:date_published'
+                         );
         
         $selfclosing_tags =array_merge($selfclosing_tags, $ftl_tags);
         

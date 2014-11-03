@@ -11,7 +11,7 @@
 
 <div style="float:left;width:70%">
 
-    <tag:articles id="articles" class="items" scope="global" <?php //pagination="1" ?> filter="where|id=2,cat_id=6">
+    <tag:articles id="articles" class="items" scope="global"  filter="where|id=2,cat_id=6">
         <tag:article class="item">
             <div><tag:ctr/>  <a href="<tag:url />"><tag:title text="limit|80, strip|html"></tag:title></a></div>
             <div><tag:description  text="limit|150"/></div>                               

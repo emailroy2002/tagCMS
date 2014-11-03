@@ -72,18 +72,18 @@ class Category extends MY_model {
             }
                         
             if ($this->ptr == 1) {
-               // echo $current_segment->name . " " . $current_segment->parent_id . " " . $current_segment->type;                
+                //echo $current_segment->name . " " . $current_segment->parent_id . " " . $current_segment->type;                
                 if ($current_segment->type == 'category') {
                     //check if parent is a menu
                     //echo " parent_type = ". $parent_segment->type;
-                    $parent_type = $parent_segment->type;
+                    $this->parent_type = $parent_segment->type;
                 } else if ($current_segment->type == 'menu'){
-                    $parent_type = $current_segment->type;
+                    $this->parent_type = $current_segment->type;
                 }
-                //echo $parent_type;   
+                
             }
             
-            if ($parent_type == 'menu') {
+            if ($this->parent_type == 'menu') {
                 if (isset($array_search)) {
                     $category = $this->model->where($array_search)->get_row();    
                 }

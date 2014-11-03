@@ -95,10 +95,6 @@ class MY_Admin_controller extends MY_Controller {
         parent::__construct('admin', 'admin/themes');                
         $this->load->add_package_path(APPPATH.'/../themes/admin/', true);
         
-        //load model 
-        /* loads model_$resource first 
-        /* secondary model/$resource 
-        */
         if (file_exists(APPPATH."models/".singular($this->resource).".php")) {                        
             $this->load->model(singular($this->resource));
         }

@@ -26,6 +26,17 @@
         <div>
             Article/Page : <input id="items_per_page" name="per_page" type="text" size="2"/>
         </div>
+        
+        <div>
+            <p>Order:
+                <select name="order">
+                    <option value="asc">ASCENDING</option>
+                    <option value="desc">DESCENDING</option>
+                </select>            
+            </p>
+        </div>
+        
+        
     </div>
     
     <div id="meta-options">

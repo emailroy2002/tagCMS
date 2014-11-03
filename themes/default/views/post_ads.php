@@ -6,11 +6,9 @@
     <small><i><tag:category_description></tag:category_description></i></small>
 </div>
 
-<div >
-
+<div>
     <input type="text" />
     <textarea></textarea>
-    
 </div>
 
 

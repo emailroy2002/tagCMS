@@ -1,9 +1,18 @@
 a, a:visited {
     color: #003366;
+    font: 11px verdana, sans-serif;
+    text-decoration: none;
 }
+
 .items {
     padding:0px 0px 10px;
-  
+    font: 11px verdana, sans-serif;     
+}
+
+.items a {
+    font: 12px verdana, sans-serif;
+    font-weight: bold;
+    text-decoration: none;     
 }
 
 .item {    

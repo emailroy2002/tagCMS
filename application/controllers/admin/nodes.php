@@ -149,6 +149,7 @@ class Nodes extends MY_Admin_controller {
            'items_per_page' => $this->input->post('items_per_page'),
            'type'   => 'category',
            'sequence' => $sequence_id,
+           'order'  => $this->input->post('order'),
            'date_added' => CURRENT_DATE,
            'status' => "published"
         );        
@@ -223,8 +224,9 @@ class Nodes extends MY_Admin_controller {
            'template_view'  => $this->input->post('template_view'),
            'template_single_view' => $this->input->post('template_single_view'),
            'is_frontpage'=>  ($this->input->post('is_frontpage') == 'on') ? true : false,
-           'items_per_page' => $this->input->post('items_per_page'),                      
-           'type'   => 'category',
+           'order'  => $this->input->post('order'),
+           'items_per_page' => $this->input->post('items_per_page'),                     
+           
            'status' => "published"
         );     
         $this->db->where('id', $update_id);

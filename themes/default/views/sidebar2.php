@@ -1,33 +1,36 @@
     <h3>Categories</h3>
     <div>
-        <tag:categories id="categories" class="main_menu"  multilevel="true" >
+        <tag:categories id="categories" class="main_menu"  multilevel="true" root="news">
             <tag:category type="li">               
-                 <div><a href="<tag:url />"><tag:name text="limit|10"/></a></div>                    
+                 <a href="<tag:url/>"><tag:name text="limit|50"></tag:name></a>
             </tag:category>
         </tag:categories>
+        
+        <h3>
+        <tag:language>
+            <tag:translate>Jobs</tag:string>
+        </tag:language>
+        </h3>
+        
+        <tag:categories multilevel="true" parent="jobs" scope="global">
+            <tag:category type="li">               
+                 <a href="<tag:url/>"><tag:name text="limit|50"></tag:name></a>
+            </tag:category>
+        </tag:categories>
+        
+        <?php if (slug()) : ?>
+            <h3>Articles</h3>
+            
+            <tag:articles id="articles"  scope="global" pagination="0">
+                <tag:article>
+                    <a href="<tag:url/>"><tag:title text="limit|30"></tag:title></a>
+                </tag:article>
+            </tag:articles>
+            
+        
+        <?php endif; ?>          
+        
+          
+             
     </div>
-    
-    <?php /*
-    <div style="border-top:1px solid #ccc;">
-        <h3>ARCHIVES</h3>
-        <tag:categories id="categories" class="categories" root="archives" scope="global" multilevel="true"  >
-            <tag:category type="li">
-                <tag:link/>                      
-            </tag:category>
-        </tag:categories>
-    </div> 
-    
-    */
-    ?>
-    
-    <?php if (slug()) : ?>
-    <h3>Articles</h3>
-    
-    <tag:articles id="articles" filter="where|id=2,cat_id=6">
-    <tag:article >
-        <div><tag:url/></div>       
-    </tag:article>
-    </tag:articles>
-    
-    
-    <?php endif; ?>
+   

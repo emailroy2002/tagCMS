@@ -21,5 +21,16 @@
         <div>
             Article/Page : <input name="items_per_page" id="items_per_page" type="text" value="<?php echo $items_per_page ?>" size="3"/>
         </div>
+        
+        <div>
+            <p>Order: 
+                <select name="order">
+                    <option value="ASC" <?php echo (strtolower($order) == 'asc')? "selected": null ?>>ASCENDING</option>
+                    <option value="DESC" <?php echo (strtolower($order) == 'desc')? "selected": null ?>>DESCENDING</option>
+                </select>            
+            </p>
+        </div>
+        
+                
     </div>
 </form>

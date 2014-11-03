@@ -1,16 +1,14 @@
 <?php 
-class Login extends MY_Model { 
+class Login extends CI_Controller { 
     
     function __construct() {	    
     	parent::__construct();
         $this->load->library('form_validation');
-        
-
     }
         
     function index() { 
-        if ($this->input->post('login')) {
-            echo "Login Authentication!!";    
+        if ($this->input->post('login')) {              
+            redirect(base_url(), 'refresh');  
         }     
     }
 }
