@@ -101,8 +101,6 @@ class MY_Admin_controller extends MY_Controller {
         
         if (file_exists(APPPATH."models/".singular($this->router->class).".php")  ) {
             $this->load->model(singular($this->router->class), 'model');                      
-        }          
-              
-      
+        } 
     }      
 }

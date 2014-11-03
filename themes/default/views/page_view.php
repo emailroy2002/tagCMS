@@ -11,7 +11,14 @@
 
 <div style="float:left;">
     <div class="widget">
-        <tag:include:partial filename="sidebar.php" />        
+        <div style="float:right">
+            <h3>Articles</h3>
+            <tag:articles pagination="0">
+                <tag:article>
+                    <a href="<tag:url/>"><tag:title text="limit|20"></tag:title></a>
+                </tag:article>
+            </tag:articles>
+        </div>                
     </div>                
 </div>
 

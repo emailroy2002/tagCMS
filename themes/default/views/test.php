@@ -1,10 +1,10 @@
 <tag:include:partial filename="header.php" />
 
 <div>
-    <h3 style="line-height:12px;margin-bottom:8px">
-        <tag:category_title text="limit|100, strip|html"></tag:category_title>
-    </h3>
-    <small><i><tag:category_description text="limit|100, strip|html"></tag:category_description></i></small>
+    <h5 style="line-height:8px;margin-bottom:8px">
+        <i><tag:category_description text="limit|100, strip|html"></tag:category_description></i>
+    </h5>
+    
 </div>
 
 <div style="float:left;width:70%">

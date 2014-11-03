@@ -64,6 +64,7 @@ class Article extends MY_model {
     //set item ordering
     function set_order($order) {
         $this->order = $order;
+        return $this;
     }
     
     
@@ -127,21 +128,21 @@ class Article extends MY_model {
    
     
     function query_items($cat_id = null, $recursive) {
-        if (!isset($cat_id)) {
+        if (isset($cat_id)) {            
+            //show items based on cat id
+            $this->model->order_by(TABLE_ITEMS.'.sequence', $this->order()); //@todo : make this dynamic based on folder
+            $this->model->where(TABLE_ITEMS.'.cat_id', $cat_id);
+        } else {        
+            //show all items    
             $this->cat_array = $this->category->get_category_array($recursive);
             $this->db->select(TABLE_ITEMS .".*");
             $this->db->select(TABLE_ITEM_DESCRIPTION .".*");
-            $this->db->select(TABLE_CATEGORIES .".slug as cat_slug,".TABLE_CATEGORIES .".name as cat_name, ". TABLE_CATEGORIES .".description as cat_desc" );       
-                  
+            $this->db->select(TABLE_CATEGORIES .".slug as cat_slug,".TABLE_CATEGORIES .".name as cat_name, ". TABLE_CATEGORIES .".description as cat_desc" );
             $this->model->join(TABLE_CATEGORIES, "items.cat_id = ".TABLE_CATEGORIES.".id");                        
             $this->model->join(TABLE_ITEM_DESCRIPTION, "items.id = item_description.id");
             $this->model->where(TABLE_ITEMS.'.status', 'published');
-                    
-            //$this->model->order_by(TABLE_ITEMS.'.date_published','DESC');
             $this->model->order_by(TABLE_ITEMS.'.sequence', $this->order()); //@todo : make this dynamic based on folder
-            
-            $ctr = 0; 
-            
+            $ctr = 0;
             if (sizeof($this->cat_array ) > 0) {    
                 foreach ($this->cat_array  as $cat) { 
                     $ctr ++;
@@ -154,9 +155,7 @@ class Article extends MY_model {
                     }
                 } 
             }
-        } else {
-            $this->model->where(TABLE_ITEMS.'.cat_id', $cat_id);
-        }
+        } 
     }
     
     

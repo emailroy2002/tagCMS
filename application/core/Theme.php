@@ -496,13 +496,6 @@ class Theme {
                     $id     =  (isset($article['attributes']['id']))? $article['attributes']['id'] : '';                                                
                     $class  = (isset($article['attributes']['class']))? $article['attributes']['class'] : '';
                     $scope = (isset($article['attributes']['scope']))? $article['attributes']['scope'] : null;
-                                        
-                    //store current category for original before override (used for pagination)
-                    if (isset($ci->current_category)) {
-                        $current_category = $ci->current_category;
-                        $ci->article->set_order($current_category->order);
-                        //echo $ci->current_category->name ." ". $ci->current_category->order."<Br>";
-                    }
                     
                     //overide current category if there is a tag "PARENT"                            
                     $parent = (isset($article['attributes']['parent']))? $article['attributes']['parent'] : null;                        
@@ -512,6 +505,8 @@ class Theme {
                         if (isset($parent->id)) {
                             $ci->current_category = $parent;                           
                         }
+                        
+                        
                         $recursion_type = ($scope == 'global') ?  true :  false;                    
                         $total_rows = $ci->article->count($ci->current_category->id, $recursion_type);
                                             
@@ -520,6 +515,14 @@ class Theme {
                         $recursion_type = ($scope == 'global') ?  true :  false;                    
                         $total_rows = $ci->article->count(null, $recursion_type);                        
                     }
+                    
+                    //store current category for original before override (used for pagination)
+                    if (isset($ci->current_category)) {
+                        $current_category = $ci->current_category;
+                        //@todo: set order first when there is an order tag
+                        $ci->article->set_order($current_category->order);                        
+                        //echo $ci->current_category->name ." ". $ci->current_category->order."<Br>";
+                    }                     
                     
                     if (isset($article['attributes']['pagination'])) {
                         if (($article['attributes']['pagination']) > 0) {
@@ -585,10 +588,15 @@ class Theme {
 		              	//Row limit is null
                         if (isset($parent)) {
                             //get item with current cateogry parent id
-                            $items = $ci->article->get_items($ci->current_category->id);
+                            
+                            //$items = $ci->article->get_items($ci->current_category->id);
+                            $ci->article->set_order($ci->current_category->order);
+                                           
+                            $items = $ci->article->get_items( $ci->current_category->id, null, null, $recursion_type);
                         } else {
                             //get all items witouth pagination
-                            $items = $ci->article->get_items();    
+                            //$items = $ci->article->get_items();
+                            $items = $ci->article->get_items( null, null, null, $recursion_type);    
                         }
                     }
 
