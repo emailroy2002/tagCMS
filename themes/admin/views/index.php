@@ -12,8 +12,11 @@
     <link rel="stylesheet" href="<?php echo  base_url('themes/admin/stylesheet/jtree/themes/default/style.min.css') ?>" />
     <link rel="stylesheet" href="<?php echo  base_url('themes/admin/stylesheet/jtree/themes/default/jstree.css') ?>" />
     <link rel="stylesheet" href="<?php echo  base_url('themes/admin/stylesheet/validation/validationEngine.jquery.css') ?>" type="text/css"/>
+    
     <script type="text/javascript" src="<?php echo base_url('themes/admin/javascript/tinymce/tinymce.min.js') ?>"></script>
     <script type="text/javascript" src="<?php echo base_url('themes/admin/javascript/tinymce/tinymce.init.js' ) ?>"></script>
+    <script type="text/javascript" src="<?php echo base_url('themes/admin/javascript/admin.script.js' ) ?>"></script>
+    
 </head>
 <body>
     <?php echo $header ?>

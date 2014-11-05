@@ -287,9 +287,10 @@ class Nodes extends MY_Admin_controller {
         $path = $this->path->get_category_link($id, $text, 'url');
         $data = array('id' => $id, 
                       'text'=> $text, 
-                      'anchor_link'=> anchor($path, $path, array('target' => '_blank', 'class' => 'category_link'))
-
+                      'anchor_link'=> anchor($path, $path, array('target' => '_blank', 'class' => 'category_link')),
+                      'roles' => $this->model->from(TABLE_ROLES)->all()
         );        
+        
         /** generation of KEYS to be fetch on view file */
         $categories = $this->model->from(TABLE_CATEGORIES)->get_where( array('id'=>$id) );        
         foreach ($categories as $category) {
@@ -426,7 +427,7 @@ class Nodes extends MY_Admin_controller {
      * @return
      */
     public function add_form_category() {
-        $data = null;
+        $data = array('roles' => $this->model->from(TABLE_ROLES)->all());
         $this->ajax(__FUNCTION__, $data);
     }
     

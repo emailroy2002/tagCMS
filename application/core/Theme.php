@@ -232,18 +232,16 @@ class Theme {
     function subcategories_tag_manager($items) {
         $ci =& get_instance();        
         $ci->temp_tag = $ci->subcategory_tag;
-        
         if (sizeof($items) > 0) {
             $ci->rows .= '<ul>';
-            
             foreach ($items as $sub_item) {
-               $ci->rows .= "<li class='$sub_item[slug]'>";
+                $ci->rows .= "<li class='$sub_item[slug]'>";
                                        
-               foreach ($ci->keys as $sub_key) {
+                foreach ($ci->keys as $sub_key) {
                     if (isset($sub_item[$sub_key])) {
                         $ci->temp_tag = self::replace($ci->temp_tag, $sub_item[$sub_key], $sub_key);
                     }                                        
-               }
+                }
                
                 //get category link for //url and //link
                 $link = $ci->path->get_category_link($sub_item['id'], $sub_item['name'], 'link');
@@ -252,7 +250,7 @@ class Theme {
                 $ci->temp_tag = self::replace($ci->temp_tag, $link, 'link');                                  
                 $ci->temp_tag = self::replace($ci->temp_tag, $url, 'url');
                 
-               
+                
                 //Add marker if there are any subcategories
                 $children = Theme::extract_tags($ci->temp_tag, array('tag:has_children'));
                 foreach ($children as $child) {
@@ -269,13 +267,10 @@ class Theme {
                if (is_array($sub_item['subcategories'])){
                     self::subcategories_tag_manager($sub_item['subcategories']);                                             
                }
-               
             
                $ci->rows .= "</li>";
            }
            $ci->rows .= '</ul>';
-           
-                      
            $ci->subcategories .=   $ci->rows;
            $ci->rows = null;
        }     
@@ -441,10 +436,8 @@ class Theme {
         $ci =& get_instance();                   
         foreach ($matches as $match) {
             $articles = Theme::extract_tags( $match, array('tag:article:page'));                            
-            foreach ($articles as $article) {  
-                
+            foreach ($articles as $article) { 
                 $items = $ci->article->get_item();
-                                
                 if (isset($items[0])) {                    
                     $field_keys = array_keys(to_array($items[0]));                            
                     $content = '';
@@ -453,17 +446,12 @@ class Theme {
                         foreach ($field_keys as $key) {                                
                             $content = self::replace($content, $item->{$key}, $key);
                         }
-                       // $rows .= get_link($item->id);
                         $rows .= $content;                            
                     }                    
                 } else {
-                    //show_error('SORRY! PAGE IS NOT FOUND.', 404);
                     return "<div class='error'>sorry, page not found</div>";
                 }          
             } 
-            
-              
-            
             $parser = new JBBCode\Parser();
             $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
             //$parser->addBBCode("php", '<pre id="PHP" class="brush: php;">'.htmlspecialchars('{param}').'</pre>');             
@@ -472,8 +460,6 @@ class Theme {
             $parser->parse($rows);            
             $text = $parser->getAsHTML();
             return $text;
-        
-                    
             //return $rows;       
         }
     }            
@@ -484,19 +470,14 @@ class Theme {
             $rows = null;            
             $ci =& get_instance();
             $ci->load->library('pagination');
-                               
-            foreach ($matches as $match) {
-              
-                $articles = Theme::extract_tags( $match, array('tag:articles'));
-                                            
-                foreach ($articles as $article) { 
-                    
+            foreach ($matches as $match) {              
+                $articles = Theme::extract_tags( $match, array('tag:articles'));                                            
+                foreach ($articles as $article) {                     
                     //type and class for parent tag
                     $type   = (isset($article['attributes']['type']))? $article['attributes']['type'] : 'div';
                     $id     =  (isset($article['attributes']['id']))? $article['attributes']['id'] : '';                                                
                     $class  = (isset($article['attributes']['class']))? $article['attributes']['class'] : '';
-                    $scope = (isset($article['attributes']['scope']))? $article['attributes']['scope'] : null;
-                    
+                    $scope = (isset($article['attributes']['scope']))? $article['attributes']['scope'] : null;                    
                     //overide current category if there is a tag "PARENT"                            
                     $parent = (isset($article['attributes']['parent']))? $article['attributes']['parent'] : null;                        
                     if (isset($parent)) {
@@ -505,11 +486,8 @@ class Theme {
                         if (isset($parent->id)) {
                             $ci->current_category = $parent;                           
                         }
-                        
-                        
                         $recursion_type = ($scope == 'global') ?  true :  false;                    
-                        $total_rows = $ci->article->count($ci->current_category->id, $recursion_type);
-                                            
+                        $total_rows = $ci->article->count($ci->current_category->id, $recursion_type);                                            
                     } else {
                         //no parent                                                
                         $recursion_type = ($scope == 'global') ?  true :  false;                    
@@ -654,7 +632,6 @@ class Theme {
             $parser->parse($rows);            
             $text = $parser->getAsHTML();
             return $text;
-                        
             //return $rows;
         }         
     }

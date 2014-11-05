@@ -31,6 +31,35 @@
             </p>
         </div>
         
-                
+        <hr/>
+        
+        <div id="permission">
+            <h4>User Role Permissions</h4>
+            <b>Website:</b>
+            <select>
+                <option>Public</option>
+                <option>Users</option>
+            </select>
+            
+             <?php //todo: only users will see this ?>                   
+            <div id="user_access_role">                
+                <?php foreach ($roles as $role) : @$ctr++?>
+                    <input type="checkbox" name="user_role_access_ids" value="<?php echo $role->title ?>" /><?php echo $role->title ?><br/>                    
+                <?php endforeach; ?>
+            </div>
+        </div>
+        
+        
+        <div id="permission">            
+            <p><b>Administration Area:</b></p>                   
+            <div id="user_access_role">                
+                <?php foreach ($roles as $role) : @$ctr++?>
+                    <input type="checkbox" name="admin_role_access_ids" value="<?php echo $role->title ?>" /><?php echo $role->title ?><br/>                    
+                <?php endforeach; ?>
+            </div>
+        </div>        
+        
+        
+                    
     </div>
 </form>

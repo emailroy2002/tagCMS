@@ -4,7 +4,6 @@
     <h5 style="line-height:8px;margin-bottom:8px">
         <i><tag:category_description text="limit|100, strip|html"></tag:category_description></i>
     </h5>
-    
 </div>
 
 <div style="float:left;width:70%">

@@ -64,7 +64,7 @@
 
 
 
-<tag:categories type="ul" id="nav" multilevel="true" parent="main">        
+<tag:categories type="ul" id="nav" multilevel="true" parent="main">                
     <tag:category type="li">               
          <a href="<tag:url/>"><tag:name text="limit|50"></tag:name>
            <tag:has_children>&#187;</tag:has_children>

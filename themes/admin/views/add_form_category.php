@@ -22,7 +22,8 @@
     <div id="page-options">    
         <div>
             Front Page :  <input id="is_frontpage" name="is_frontpage" type="checkbox" />
-        </div>    
+        </div>
+            
         <div>
             Article/Page : <input id="items_per_page" name="per_page" type="text" size="2"/>
         </div>
@@ -34,10 +35,40 @@
                     <option value="desc">DESCENDING</option>
                 </select>            
             </p>
+        </div>        
+    </div>
+    
+
+       
+        <hr/>
+        
+        <div id="permission">
+            <h4>User Role Permissions</h4>
+            <b>Website:</b>
+            <select>
+                <option>Public</option>
+                <option>Users</option>
+            </select>
+            
+            <?php //todo: only users will see this ?>             
+            <div id="user_access_role">                
+                <?php foreach ($roles as $role) : @$ctr++?>
+                    <input type="checkbox" name="user_role_access_ids" value="<?php echo $role->title ?>" /><?php echo $role->title ?><br/>                    
+                <?php endforeach; ?>
+            </div>
         </div>
         
         
-    </div>
+        <div id="permission">            
+            <p><b>Administration Area:</b></p>                   
+            <div id="user_access_role">                
+                <?php foreach ($roles as $role) : @$ctr++?>
+                    <input type="checkbox" name="admin_role_access_ids" value="<?php echo $role->title ?>" /><?php echo $role->title ?><br/>                    
+                <?php endforeach; ?>
+            </div>
+        </div>   
+        
+        
     
     <div id="meta-options">
         <div>
